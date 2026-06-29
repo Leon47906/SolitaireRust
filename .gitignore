@@ -1,0 +1,12 @@
+# Rust build artifacts
+target/
+solitaire-core/target/
+solitaire-wasm/target/
+Cargo.lock
+# wasm-pack output (generated, don't commit)
+web/pkg/
+# Python server cache
+__pycache__/
+# .DS_Store files (macOS)
+.DS_Store
+EOF

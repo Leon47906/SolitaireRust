@@ -1,0 +1,6 @@
+[workspace]
+members = [
+	"solitaire-core",
+	"solitaire-wasm",
+]
+resolver = "2"
