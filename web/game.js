@@ -14,6 +14,7 @@ const RESTART_BTN = { x: 0, y: 0, w: 130, h: 48 };
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 const cardImages = {};
+/** @type {import('./pkg/solitaire_wasm.js').WasmGame} */
 let game;
 let gameWon = false;
 let selected = null;
