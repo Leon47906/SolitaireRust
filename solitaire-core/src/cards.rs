@@ -33,7 +33,7 @@ impl Card {
         self.face_up = !self.face_up;
     }
     pub fn is_face_up(&self) -> bool {
-        return self.face_up;
+        self.face_up
     }
     pub fn make_clickable(&mut self) {
         self.is_clickable = true;
@@ -42,24 +42,24 @@ impl Card {
         self.is_clickable = false;
     }
     pub fn get_value(&self) -> u8 {
-        return self.value;
+        self.value
     }
     pub fn get_suit(&self) -> Suit {
-        return self.suit;
+        self.suit
     }
     pub fn is_red(&self) -> bool {
         match self.get_suit() {
             Suit::Hearts => {
-                return true;
+                true
             }
             Suit::Diamonds => {
-                return true;
+                true
             }
             Suit::Spades => {
-                return false;
+                false
             }
             Suit::Clubs => {
-                return false;
+                false
             }
         }
     }

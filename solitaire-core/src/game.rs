@@ -53,6 +53,12 @@ pub struct SolitaireGame {
     waste: Pile,
 }
 
+impl Default for SolitaireGame {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl SolitaireGame {
     pub fn new() -> Self {
         let mut deck = new_deck();
@@ -94,31 +100,19 @@ impl SolitaireGame {
     }
     fn is_on_top(&self, card: &Card) -> bool {
         for pile in &self.tableau {
-            match pile.top() {
-                Some(top_card) => {
-                    if top_card == card {
-                        return true;
-                    }
-                }
-                None => {}
-            }
-        }
-        match self.waste.top() {
-            Some(top_card) => {
-                if top_card == card {
+            if let Some(top_card) = pile.top()
+                && top_card == card {
                     return true;
                 }
-            }
-            None => {}
         }
-        match self.deck.top() {
-            Some(top_card) => {
-                if top_card == card {
-                    return true;
-                }
+        if let Some(top_card) = self.waste.top()
+            && top_card == card {
+                return true;
             }
-            None => {}
-        }
+        if let Some(top_card) = self.deck.top()
+            && top_card == card {
+                return true;
+            }
         false
     }
     fn is_foundation_move_valid(&self, card: &Card, destination: &Pile) -> bool {
@@ -143,7 +137,7 @@ impl SolitaireGame {
             }
             Some(top_card) => {
                 if top_card.get_value() == card.get_value() + 1
-                    && top_card.is_red() == !card.is_red()
+                    && top_card.is_red() != card.is_red()
                 {
                     return true;
                 }
@@ -155,16 +149,16 @@ impl SolitaireGame {
         let (card, pile) = match from {
             PileKind::Deck => {
                 let card_ref = self.deck.top()?;
-                (card_ref.clone(), &self.deck)
+                (*card_ref, &self.deck)
             }
             PileKind::Waste => {
                 let card_ref = self.waste.top()?;
-                (card_ref.clone(), &self.waste)
+                (*card_ref, &self.waste)
             }
             PileKind::Tableau(col) => {
                 let pile_ref = self.tableau.get(col)?;
                 let card_ref = pile_ref.top()?;
-                (card_ref.clone(), pile_ref)
+                (*card_ref, pile_ref)
             }
             PileKind::Foundation(_) => {
                 return None;
@@ -283,7 +277,7 @@ impl SolitaireGame {
                 let row = pile_len - count;
 
                 let bottom_card = match self.tableau[from_col].get_cards().get(row) {
-                    Some(c) => c.clone(),
+                    Some(c) => *c,
                     None => return false,
                 };
 
@@ -317,10 +311,10 @@ impl SolitaireGame {
         match self.deck.size() {
             0 => {
                 self.waste.recycle_to_deck(&mut self.deck);
-                return true;
+                true
             }
             _ => {
-                return false;
+                false
             }
         }
     }
@@ -362,7 +356,7 @@ impl SolitaireGame {
                     to: PileKind::Foundation(i),
                 },
                 PileKind::Tableau(_) => Move::FromTableauToFoundation {
-                    from: from,
+                    from,
                     to: PileKind::Foundation(i),
                 },
                 _ => return false,
@@ -377,9 +371,9 @@ impl SolitaireGame {
         for i in 0..7 {
             if self.attempt_move(match from {
                 PileKind::Tableau(_) => Move::FromTableauToTableau {
-                    from: from,
+                    from,
                     to: PileKind::Tableau(i),
-                    count: count,
+                    count,
                 },
                 PileKind::Waste => Move::FromWasteToPile {
                     to: PileKind::Tableau(i),

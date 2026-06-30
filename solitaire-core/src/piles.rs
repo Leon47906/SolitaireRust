@@ -7,12 +7,18 @@ pub struct Pile {
     cards: Vec<Card>,
 }
 
+impl Default for Pile {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Pile {
     pub fn new() -> Self {
         Self { cards: Vec::new() }
     }
     pub fn new_with(cards: Vec<Card>) -> Self {
-        Self { cards: cards }
+        Self { cards }
     }
     pub fn shuffle(&mut self) {
         let mut rng = rand::rng();
@@ -20,20 +26,17 @@ impl Pile {
     }
 
     pub fn get_cards(&self) -> &Vec<Card> {
-        return &self.cards;
+        &self.cards
     }
 
     pub fn get_cards_mut(&mut self) -> &mut Vec<Card> {
-        return &mut self.cards;
+        &mut self.cards
     }
 
     pub fn draw_from_top(&mut self) -> Option<Card> {
-        match self.size() {
-            2.. => {
-                let len = self.size();
-                self.cards[len - 2].make_clickable();
-            }
-            _ => {}
+        if let 2.. = self.size() {
+            let len = self.size();
+            self.cards[len - 2].make_clickable();
         }
         self.cards.pop()
     }
@@ -79,7 +82,7 @@ impl Pile {
                 let len = self.size();
                 if self.cards[len - 2].is_face_up() {
                     self.cards[len - 2].make_clickable();
-                    return true;
+                    true
                 } else {
                     self.cards[len - 2].flip();
                     self.cards[len - 2].make_clickable();
@@ -95,7 +98,7 @@ impl Pile {
                 let len = self.size();
                 if self.cards[len - 1].is_face_up() {
                     self.cards[len - 1].make_clickable();
-                    return true;
+                    true
                 } else {
                     self.cards[len - 1].flip();
                     self.cards[len - 1].make_clickable();

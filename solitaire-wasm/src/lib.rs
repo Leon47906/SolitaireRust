@@ -9,6 +9,7 @@ pub struct WasmGame {
 
 #[wasm_bindgen]
 impl WasmGame {
+    #[allow(clippy::new_without_default)]
     #[wasm_bindgen(constructor)]
     pub fn new() -> WasmGame {
         WasmGame {
