@@ -25,15 +25,24 @@ pub enum PileKind {
     Deck,
     Waste,
     Tableau(usize),
-    Foundation(usize)
+    Foundation(usize),
 }
 
 #[derive(Debug, Clone, Copy)]
-pub enum Move{
+pub enum Move {
     FromDeckToWaste,
-    FromWasteToPile{ to : PileKind},
-    FromTableauToTableau{ from : PileKind, to : PileKind, count : usize},
-    FromTableauToFoundation{ from : PileKind, to : PileKind}
+    FromWasteToPile {
+        to: PileKind,
+    },
+    FromTableauToTableau {
+        from: PileKind,
+        to: PileKind,
+        count: usize,
+    },
+    FromTableauToFoundation {
+        from: PileKind,
+        to: PileKind,
+    },
 }
 
 #[derive(Debug)]
@@ -41,7 +50,7 @@ pub struct SolitaireGame {
     deck: Pile,
     tableau: Vec<Pile>,
     foundation: Vec<Pile>,
-    waste: Pile 
+    waste: Pile,
 }
 
 impl SolitaireGame {
@@ -53,79 +62,96 @@ impl SolitaireGame {
         for column in 0..7 {
             let mut pile = Pile::new();
             for row in 0..=column {
-                    match deck.draw_from_top() {
-                        Some(mut card) => {
-                            if row == column {
-                                card.flip();
-                            }
-                            pile.add_to_top(card);
+                match deck.draw_from_top() {
+                    Some(mut card) => {
+                        if row == column {
+                            card.flip();
                         }
-                        None => {panic!("Not enough cards in deck!")}
+                        pile.add_to_top(card);
+                    }
+                    None => {
+                        panic!("Not enough cards in deck!")
                     }
                 }
+            }
             tableau.push(pile);
         }
         let deck_len = deck.get_cards().len();
         let deck_cards = deck.get_cards_mut();
         deck_cards[deck_len - 1].make_clickable();
-        for _ in 0..4 { foundation.push(Pile::new()); }
+        for _ in 0..4 {
+            foundation.push(Pile::new());
+        }
         Self {
             deck,
             tableau,
             foundation,
-            waste
+            waste,
         }
     }
     pub fn is_game_won(&self) -> bool {
         self.foundation.iter().all(|f| f.size() == 13)
     }
-    fn is_on_top(&self, card : &Card) -> bool {
+    fn is_on_top(&self, card: &Card) -> bool {
         for pile in &self.tableau {
             match pile.top() {
                 Some(top_card) => {
-                    if top_card == card { return true; }
+                    if top_card == card {
+                        return true;
+                    }
                 }
                 None => {}
             }
         }
         match self.waste.top() {
             Some(top_card) => {
-                if top_card == card { return true; }
+                if top_card == card {
+                    return true;
+                }
             }
             None => {}
         }
         match self.deck.top() {
             Some(top_card) => {
-                if top_card == card { return true; }
+                if top_card == card {
+                    return true;
+                }
             }
             None => {}
         }
         false
     }
-    fn is_foundation_move_valid(&self ,card : &Card, destination : &Pile) -> bool {
+    fn is_foundation_move_valid(&self, card: &Card, destination: &Pile) -> bool {
         if !self.is_on_top(card) {
             return false;
         }
 
         match destination.top() {
-            None => { card.get_value() == 1 }
+            None => card.get_value() == 1,
             Some(top_card) => {
-                top_card.get_value() + 1 == card.get_value() && top_card.get_suit() == card.get_suit()
+                top_card.get_value() + 1 == card.get_value()
+                    && top_card.get_suit() == card.get_suit()
             }
         }
     }
-    fn is_tableau_move_valid(&self, card : &Card, destination : &Pile) -> bool {
+    fn is_tableau_move_valid(&self, card: &Card, destination: &Pile) -> bool {
         match destination.top() {
             None => {
-                if card.get_value() == 13 { return true; }
+                if card.get_value() == 13 {
+                    return true;
+                }
             }
             Some(top_card) => {
-                if top_card.get_value() == card.get_value() + 1 && top_card.is_red() == !card.is_red() { return true; }
+                if top_card.get_value() == card.get_value() + 1
+                    && top_card.is_red() == !card.is_red()
+                {
+                    return true;
+                }
             }
         }
         false
     }
-    fn try_get_top_card(&self, from : PileKind) -> Option<(Card,&Pile)> {
+    fn try_get_top_card(&self, from: PileKind) -> Option<(Card, &Pile)> {
         let (card, pile) = match from {
             PileKind::Deck => {
                 let card_ref = self.deck.top()?;
@@ -145,11 +171,13 @@ impl SolitaireGame {
             }
         };
 
-        if !self.is_on_top(&card) { return None; }
+        if !self.is_on_top(&card) {
+            return None;
+        }
 
         Some((card, pile))
     }
-    fn pile_for_kind_mut(&mut self, kind : PileKind) -> Option<&mut Pile> {
+    fn pile_for_kind_mut(&mut self, kind: PileKind) -> Option<&mut Pile> {
         match kind {
             PileKind::Deck => Some(&mut self.deck),
             PileKind::Waste => Some(&mut self.waste),
@@ -157,7 +185,7 @@ impl SolitaireGame {
             PileKind::Foundation(idx) => self.foundation.get_mut(idx),
         }
     }
-    fn move_top_card(&mut self, from : PileKind, to : PileKind) -> bool {
+    fn move_top_card(&mut self, from: PileKind, to: PileKind) -> bool {
         let (card, _source) = match self.try_get_top_card(from) {
             Some(tuple) => tuple,
             None => return false,
@@ -188,8 +216,9 @@ impl SolitaireGame {
                 };
                 if self.is_tableau_move_valid(&card, to_pile) {
                     self.tableau[col1].tableau_reveal()
+                } else {
+                    false
                 }
-                else { false }
             }
             (PileKind::Tableau(col), PileKind::Foundation(number)) => {
                 let to_pile = match self.foundation.get(number) {
@@ -198,12 +227,17 @@ impl SolitaireGame {
                 };
                 if self.is_foundation_move_valid(&card, to_pile) {
                     self.tableau[col].tableau_reveal()
+                } else {
+                    false
                 }
-                else { false }
             }
-            _ => { return false; }
+            _ => {
+                return false;
+            }
         };
-        if !is_valid { return false; }
+        if !is_valid {
+            return false;
+        }
 
         let from_pile = match self.pile_for_kind_mut(from) {
             Some(p) => p,
@@ -211,34 +245,40 @@ impl SolitaireGame {
         };
 
         let card = match from_pile.draw_from_top() {
-                Some(card) => card,
-                None => return false,
+            Some(card) => card,
+            None => return false,
         };
 
         let to_pile = match self.pile_for_kind_mut(to) {
-                Some(p) => p,
-                None => return false,
+            Some(p) => p,
+            None => return false,
         };
 
         to_pile.add_to_top(card);
-    
+
         true
     }
-    fn move_stack (&mut self, from : PileKind, count : usize, to : PileKind) -> bool {
+    fn move_stack(&mut self, from: PileKind, count: usize, to: PileKind) -> bool {
         match count {
             2.. => {
                 let (from_col, to_col) = match (from, to) {
                     (PileKind::Tableau(f), PileKind::Tableau(g)) => (f, g),
                     _ => return false,
                 };
-                
-                if from_col >= self.tableau.len() || to_col >= self.tableau.len() { return false; }
 
-                if from_col == to_col { return false; }
+                if from_col >= self.tableau.len() || to_col >= self.tableau.len() {
+                    return false;
+                }
+
+                if from_col == to_col {
+                    return false;
+                }
 
                 let pile_len = self.tableau[from_col].size();
 
-                if count > pile_len { return false; }
+                if count > pile_len {
+                    return false;
+                }
 
                 let row = pile_len - count;
 
@@ -247,12 +287,16 @@ impl SolitaireGame {
                     None => return false,
                 };
 
-                if !bottom_card.is_face_up() { return false; }
+                if !bottom_card.is_face_up() {
+                    return false;
+                }
 
                 let to_pile = &self.tableau[to_col];
-                if !self.is_tableau_move_valid(&bottom_card, to_pile) { return false; }
+                if !self.is_tableau_move_valid(&bottom_card, to_pile) {
+                    return false;
+                }
 
-                let stack : Vec<Card> = self.tableau[from_col]
+                let stack: Vec<Card> = self.tableau[from_col]
                     .get_cards_mut()
                     .drain(row..)
                     .collect();
@@ -264,9 +308,9 @@ impl SolitaireGame {
                 self.tableau[from_col].tableau_reveal_last();
 
                 true
-            },
-            1 => { self.move_top_card(from, to)},
-            _ => false
+            }
+            1 => self.move_top_card(from, to),
+            _ => false,
         }
     }
     pub fn flush_waste(&mut self) -> bool {
@@ -275,45 +319,52 @@ impl SolitaireGame {
                 self.waste.recycle_to_deck(&mut self.deck);
                 return true;
             }
-            _ => { return false;}
+            _ => {
+                return false;
+            }
         }
     }
-    pub fn attempt_move(&mut self, mv : Move) -> bool {
+    pub fn attempt_move(&mut self, mv: Move) -> bool {
         match mv {
-            Move::FromDeckToWaste => {
-                self.move_stack(PileKind::Deck, 1, PileKind::Waste)
-            }
-            Move::FromWasteToPile { to } => {
-                self.move_stack(PileKind::Waste, 1, to)
-            }
-            Move::FromTableauToTableau { from, to, count } => {
-                self.move_stack(from, count, to)
-            }
-            Move::FromTableauToFoundation { from, to } => {
-                self.move_stack(from, 1, to)
-            }
+            Move::FromDeckToWaste => self.move_stack(PileKind::Deck, 1, PileKind::Waste),
+            Move::FromWasteToPile { to } => self.move_stack(PileKind::Waste, 1, to),
+            Move::FromTableauToTableau { from, to, count } => self.move_stack(from, count, to),
+            Move::FromTableauToFoundation { from, to } => self.move_stack(from, 1, to),
         }
     }
     pub fn get_state(&self) -> GameState {
-        let card_view = |c : &Card| CardView {
-            suit:format!("{:?}",c.get_suit()),
-            value:c.get_value(),
-            face_up:c.is_face_up(),
+        let card_view = |c: &Card| CardView {
+            suit: format!("{:?}", c.get_suit()),
+            value: c.get_value(),
+            face_up: c.is_face_up(),
         };
 
         GameState {
-            deck_size:self.deck.size(),
-            waste:self.waste.get_cards().iter().map(card_view).collect(),
-            tableau:self.tableau.iter().map(|pile| pile.get_cards().iter().map(card_view).collect()).collect(),
-            foundation:self.foundation.iter().map(|pile| pile.get_cards().iter().map(card_view).collect()).collect(),
+            deck_size: self.deck.size(),
+            waste: self.waste.get_cards().iter().map(card_view).collect(),
+            tableau: self
+                .tableau
+                .iter()
+                .map(|pile| pile.get_cards().iter().map(card_view).collect())
+                .collect(),
+            foundation: self
+                .foundation
+                .iter()
+                .map(|pile| pile.get_cards().iter().map(card_view).collect())
+                .collect(),
         }
     }
-    
+
     pub fn auto_move_to_foundation(&mut self, from: PileKind) -> bool {
         for i in 0..4 {
             if self.attempt_move(match from {
-                PileKind::Waste => Move::FromWasteToPile{ to : PileKind::Foundation(i)},
-                PileKind::Tableau(_) => Move::FromTableauToFoundation{ from: from, to: PileKind::Foundation(i)},
+                PileKind::Waste => Move::FromWasteToPile {
+                    to: PileKind::Foundation(i),
+                },
+                PileKind::Tableau(_) => Move::FromTableauToFoundation {
+                    from: from,
+                    to: PileKind::Foundation(i),
+                },
                 _ => return false,
             }) {
                 return true;
@@ -325,8 +376,14 @@ impl SolitaireGame {
     pub fn auto_move_to_tableau(&mut self, from: PileKind, count: usize) -> bool {
         for i in 0..7 {
             if self.attempt_move(match from {
-                PileKind::Tableau(_) => Move::FromTableauToTableau{ from: from, to: PileKind::Tableau(i), count: count},
-                PileKind::Waste => Move::FromWasteToPile{ to: PileKind::Tableau(i) },
+                PileKind::Tableau(_) => Move::FromTableauToTableau {
+                    from: from,
+                    to: PileKind::Tableau(i),
+                    count: count,
+                },
+                PileKind::Waste => Move::FromWasteToPile {
+                    to: PileKind::Tableau(i),
+                },
                 _ => return false,
             }) {
                 return true;

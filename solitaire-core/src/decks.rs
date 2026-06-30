@@ -5,7 +5,7 @@ use rand::seq::SliceRandom;
 
 #[derive(Debug)]
 pub struct Deck {
-    cards: Vec<Card> 
+    cards: Vec<Card>,
 }
 
 impl Deck {
@@ -13,7 +13,7 @@ impl Deck {
         let mut cards = Vec::with_capacity(52);
         for value in 1..=13 {
             for suit in [Suit::Hearts, Suit::Diamonds, Suit::Spades, Suit::Clubs] {
-                cards.push(Card::new(value,suit));
+                cards.push(Card::new(value, suit));
             }
         }
         Self { cards }
@@ -32,4 +32,3 @@ impl CardStack for Deck {
         &mut self.cards
     }
 }
-

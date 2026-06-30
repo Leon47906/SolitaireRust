@@ -1,8 +1,8 @@
 pub mod cards;
 pub mod decks;
-pub mod stack;
-pub mod piles;
 pub mod game;
+pub mod piles;
+pub mod stack;
 
-pub use game::SolitaireGame;
 pub use game::Move;
+pub use game::SolitaireGame;

@@ -4,14 +4,14 @@ use rand::seq::SliceRandom;
 
 #[derive(Debug)]
 pub struct Pile {
-    cards: Vec<Card>
+    cards: Vec<Card>,
 }
 
 impl Pile {
     pub fn new() -> Self {
         Self { cards: Vec::new() }
     }
-    pub fn new_with(cards : Vec<Card>) -> Self {
+    pub fn new_with(cards: Vec<Card>) -> Self {
         Self { cards: cards }
     }
     pub fn shuffle(&mut self) {
@@ -28,7 +28,7 @@ impl Pile {
     }
 
     pub fn draw_from_top(&mut self) -> Option<Card> {
-        match self.size() { 
+        match self.size() {
             2.. => {
                 let len = self.size();
                 self.cards[len - 2].make_clickable();
@@ -41,7 +41,7 @@ impl Pile {
     pub fn add_to_top(&mut self, card: Card) {
         match self.size() {
             0 => {}
-            1 .. => {
+            1.. => {
                 let len = self.size();
                 self.cards[len - 1].make_unclickable();
             }
@@ -77,11 +77,10 @@ impl Pile {
             1 => true,
             2.. => {
                 let len = self.size();
-                if self.cards[len - 2].is_face_up() { 
+                if self.cards[len - 2].is_face_up() {
                     self.cards[len - 2].make_clickable();
                     return true;
-                }
-                else {
+                } else {
                     self.cards[len - 2].flip();
                     self.cards[len - 2].make_clickable();
                     true
@@ -97,8 +96,7 @@ impl Pile {
                 if self.cards[len - 1].is_face_up() {
                     self.cards[len - 1].make_clickable();
                     return true;
-                }
-                else {
+                } else {
                     self.cards[len - 1].flip();
                     self.cards[len - 1].make_clickable();
                     true
@@ -106,13 +104,15 @@ impl Pile {
             }
         }
     }
-    pub fn recycle_to_deck(&mut self, dest : &mut Pile) {
+    pub fn recycle_to_deck(&mut self, dest: &mut Pile) {
         let mut cards = self.cards.drain(..).collect::<Vec<_>>();
         cards.reverse();
 
         for card in &mut cards {
             card.make_unclickable();
-            if card.is_face_up() { card.flip(); }
+            if card.is_face_up() {
+                card.flip();
+            }
         }
 
         match cards.len() {
@@ -131,7 +131,7 @@ pub fn new_deck() -> Pile {
     let mut cards = Vec::with_capacity(52);
     for value in 1..=13 {
         for suit in [Suit::Hearts, Suit::Diamonds, Suit::Spades, Suit::Clubs] {
-            cards.push(Card::new(value,suit));
+            cards.push(Card::new(value, suit));
         }
     }
     let mut deck = Pile::new_with(cards);
