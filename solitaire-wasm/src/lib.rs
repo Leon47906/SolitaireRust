@@ -1,4 +1,3 @@
-use serde_wasm_bindgen;
 use solitaire::{game::PileKind, Move, SolitaireGame};
 use wasm_bindgen::prelude::*;
 
@@ -46,7 +45,7 @@ impl WasmGame {
         self.game.attempt_move(Move::FromTableauToTableau {
             from: PileKind::Tableau(from),
             to: PileKind::Tableau(to),
-            count: count,
+            count,
         })
     }
 
