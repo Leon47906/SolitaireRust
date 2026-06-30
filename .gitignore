@@ -9,4 +9,10 @@ web/pkg/
 __pycache__/
 # .DS_Store files (macOS)
 .DS_Store
+# Node.js packages
+web/.prettierrc
+web/node_modules/
+web/package-lock.json
+web/package.json
+
 EOF
