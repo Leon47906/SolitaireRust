@@ -25,27 +25,23 @@ impl WasmGame {
     }
 
     pub fn attempt_move_waste_to_tableau(&mut self, col: usize) -> bool {
-        self.game.attempt_move(Move::FromWasteToPile(PileKind::Tableau(col)))
+        self.game.attempt_move(Move::FromWasteToPile{ to: PileKind::Tableau(col)})
     }
 
     pub fn attempt_move_waste_to_foundation(&mut self, idx: usize) -> bool {
-        self.game.attempt_move(Move::FromWasteToPile(PileKind::Foundation(idx)))
+        self.game.attempt_move(Move::FromWasteToPile{ to: PileKind::Foundation(idx)})
     }
 
-    pub fn attempt_move_tableau_to_tableau(&mut self, from: usize, to: usize) -> bool {
-        self.game.attempt_move(Move::FromTableauToPile(from, PileKind::Tableau(to)))
+    pub fn attempt_move_tableau_to_tableau(&mut self, from: usize, to: usize, count: usize) -> bool {
+        self.game.attempt_move(Move::FromTableauToTableau{from: PileKind::Tableau(from), to: PileKind::Tableau(to), count: count})
     }
 
     pub fn attempt_move_tableau_to_foundation(&mut self, from: usize, idx: usize) -> bool {
-        self.game.attempt_move(Move::FromTableauToPile(from, PileKind::Foundation(idx)))
+        self.game.attempt_move(Move::FromTableauToFoundation{from: PileKind::Tableau(from), to: PileKind::Foundation(idx)})
     }
 
     pub fn flush_waste(&mut self) -> bool {
         self.game.flush_waste()
-    }
-
-    pub fn move_stack(&mut self, from_col : usize, row : usize, to_col : usize) -> bool {
-        self.game.move_stack(PileKind::Tableau(from_col), row, PileKind::Tableau(to_col))
     }
 
     pub fn auto_move_waste_to_foundation(&mut self) -> bool {
@@ -57,11 +53,11 @@ impl WasmGame {
     }
 
     pub fn auto_move_waste_to_tableau(&mut self) -> bool {
-        self.game.auto_move_to_tableau(PileKind::Waste)
+        self.game.auto_move_to_tableau(PileKind::Waste, 1)
     }
 
-    pub fn auto_move_tableau_to_tableau(&mut self, col: usize) -> bool {
-        self.game.auto_move_to_tableau(PileKind::Tableau(col))
+    pub fn auto_move_tableau_to_tableau(&mut self, col: usize, count: usize) -> bool {
+        self.game.auto_move_to_tableau(PileKind::Tableau(col), count)
     }
 
     pub fn is_game_won(&self) -> bool {

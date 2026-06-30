@@ -167,14 +167,21 @@ canvas.addEventListener('click', (e) => {
   if (!target) { selected = null; render(); return; }
 
   if (e.shiftKey) {
-	if (target.kind === 'waste') { game.auto_move_waste_to_foundation(); }
-	else if (target.kind === 'tableau') { game.auto_move_tableau_to_foundation(target.col); }
-	if (e.altKey) {
-		if (target.kind === 'waste') { game.auto_move_waste_to_tableau(); }
-		else if (target.kind === 'tableau') { game.auto_move_tableau_to_tableau(target.col); }
-	}
-	render();
-	return;
+    selected = null;
+    if (e.altKey) {
+      if (target.kind === 'waste') { game.auto_move_waste_to_tableau(); }
+      else if (target.kind === 'tableau') { 
+        const state = game.get_state();
+        const count = state.tableau[target.col].length - target.row;
+        game.auto_move_tableau_to_tableau(target.col, count);
+      }
+    }
+    else {
+      if (target.kind === 'waste') game.auto_move_waste_to_foundation();
+      else if (target.kind === 'tableau') game.auto_move_tableau_to_foundation(target.col);
+    }
+    render();
+    return;
   }
 
   if (!selected) {
@@ -244,16 +251,13 @@ function attemptMoveFromSelected(target) {
 	} else if (selected.kind === 'tableau') {
 		const state = game.get_state();
 		const pile = state.tableau[selected.col];
-		const isTopCard = selected.row === pile.length - 1;
+		const count = pile.length - selected.row;
 
 		if (target.kind === 'tableau') {
-			if (isTopCard)
-				game.attempt_move_tableau_to_tableau(selected.col, target.col);
-			else
-				game.move_stack(selected.col, selected.row, target.col);
+			game.attempt_move_tableau_to_tableau(selected.col, target.col, count);
 		}
 		else if (target.kind === 'foundation') {
-			if (isTopCard)
+			if (count === 1)
 				game.attempt_move_tableau_to_foundation(selected.col, target.index);
 		}
 	}
