@@ -40,8 +40,8 @@ solitaire/
 
 ### Build
 
+From the workspace root
 ```bash
-# From the workspace root
 wasm-pack build solitaire-wasm --target web --out-dir ../web/pkg
 ```
 
