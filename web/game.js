@@ -9,6 +9,8 @@ const TABLEAU_Y = 200;
 let TABLEAU_CARD_OFFSET = 25;
 const TOP_ROW_Y = 30;
 const RESTART_BTN = { x: 0, y: 0, w: 130, h: 48 };
+let dragOffsetX = 0;
+let dragOffsetY = 0;
 
 // State
 const canvas = document.getElementById('canvas');
@@ -62,18 +64,22 @@ function cardKey(card) {
 
 function drawCard(ctx, card, x, y, highlight = false) {
 	const img = card.face_up ? cardImages[cardKey(card)] : cardImages['back'];
-	ctx.drawImage(img, x, y, CARD_W, CARD_H);
 	if (highlight) {
+		ctx.drawImage(img, x, y, CARD_W, CARD_H);
+		/*
 		ctx.save();
 		ctx.strokeStyle = 'yellow';
 		ctx.lineWidth = 2;
 		ctx.strokeRect(x + 1, y + 1, CARD_W - 2, CARD_H - 2);
 		ctx.restore();
+        */
+	} else {
+		ctx.drawImage(img, x, y, CARD_W, CARD_H);
 	}
 }
 
 // Rendering
-function drawState(state) {
+function drawState(state, mouse_x, mouse_y) {
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 
 	// Calculate dynamic offset so tallest pile fits on screen
@@ -87,6 +93,7 @@ function drawState(state) {
 				)
 			: TABLEAU_CARD_OFFSET;
 
+	const draggedCards = [];
 	// Deck
 	if (state.deck_size > 0)
 		ctx.drawImage(cardImages['back'], MARGIN, TOP_ROW_Y, CARD_W, CARD_H);
@@ -96,13 +103,31 @@ function drawState(state) {
 	// Waste
 	if (state.waste.length > 0) {
 		const isSelected = selected?.kind === 'waste';
-		drawCard(
-			ctx,
-			state.waste[state.waste.length - 1],
-			MARGIN + PILE_SPACING,
-			TOP_ROW_Y,
-			isSelected,
-		);
+		if (!isSelected) {
+			drawCard(
+				ctx,
+				state.waste[state.waste.length - 1],
+				MARGIN + PILE_SPACING,
+				TOP_ROW_Y,
+				isSelected,
+			);
+		} else {
+			draggedCards.push({
+				card: state.waste[state.waste.length - 1],
+				x: mouse_x - dragOffsetX,
+				y: mouse_y - dragOffsetY,
+				highlight: true,
+			});
+			if (state.waste.length > 1) {
+				drawCard(
+					ctx,
+					state.waste[state.waste.length - 2],
+					MARGIN + PILE_SPACING,
+					TOP_ROW_Y,
+					false,
+				);
+			}
+		}
 	}
 
 	state.foundation.forEach((pile, i) => {
@@ -144,22 +169,37 @@ function drawState(state) {
 				selected?.kind === 'tableau' &&
 				selected.col === col &&
 				row >= selected.row;
-			drawCard(
-				ctx,
-				card,
-				MARGIN + col * PILE_SPACING,
-				TABLEAU_Y + row * dynamicOffset,
-				isSelected,
-			);
+			if (!isSelected) {
+				drawCard(
+					ctx,
+					card,
+					MARGIN + col * PILE_SPACING,
+					TABLEAU_Y + row * dynamicOffset,
+					isSelected,
+				);
+			} else {
+				draggedCards.push({
+					card: card,
+					x: mouse_x - dragOffsetX,
+					y:
+						mouse_y +
+						(row - selected.row) * dynamicOffset -
+						dragOffsetY,
+					highlight: true,
+				});
+			}
 		});
 	});
 	drawRestartButton();
+	for (const dragged of draggedCards) {
+		drawCard(ctx, dragged.card, dragged.x, dragged.y, dragged.highlight);
+	}
 	return dynamicOffset;
 }
 
-function render() {
+function render(mouse_x = null, mouse_y = null) {
 	const state = game.get_state();
-	const dynamicOffset = drawState(state);
+	const dynamicOffset = drawState(state, mouse_x, mouse_y);
 	gameWon = game.is_game_won();
 	if (gameWon) drawWinScreen();
 	return { state, dynamicOffset };
@@ -232,18 +272,27 @@ canvas.addEventListener('click', (e) => {
 	if (!selected) {
 		if (target.kind === 'foundation') return;
 		selected = target;
+		dragOffsetX = x - target.x;
+		dragOffsetY = y - target.y;
 	} else {
 		attemptMoveFromSelected(target);
 	}
 
-	render();
+	render(x, y);
+});
+
+canvas.addEventListener('mousemove', (e) => {
+	if (!selected) return;
+	const x = e.offsetX;
+	const y = e.offsetY;
+	render(x, y);
 });
 
 function getCardAt(x, y, state, dynamicOffset) {
 	// Check waste
 	if (state.waste.length > 0) {
 		if (hitCard(x, y, MARGIN + PILE_SPACING, TOP_ROW_Y))
-			return { kind: 'waste' };
+			return { kind: 'waste', x: MARGIN + PILE_SPACING, y: TOP_ROW_Y };
 	}
 
 	// Check tableau columns (iterate in reverse so top card wins)
@@ -253,7 +302,7 @@ function getCardAt(x, y, state, dynamicOffset) {
 
 		if (pile.length === 0) {
 			if (hitCard(x, y, cx, TABLEAU_Y)) {
-				return { kind: 'tableau', col, row: 0 };
+				return { kind: 'tableau', col, row: 0, x: cx, y: TABLEAU_Y };
 			}
 			continue;
 		}
@@ -262,7 +311,8 @@ function getCardAt(x, y, state, dynamicOffset) {
 			// Only the last card has full height, others are clipped by overlap
 			const h = row === pile.length - 1 ? CARD_H : TABLEAU_CARD_OFFSET;
 			if (x >= cx && x <= cx + CARD_W && y >= cy && y <= cy + h) {
-				if (pile[row].face_up) return { kind: 'tableau', col, row };
+				if (pile[row].face_up)
+					return { kind: 'tableau', col, row, x: cx, y: cy };
 				else return null;
 			}
 		}
