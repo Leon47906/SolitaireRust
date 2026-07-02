@@ -1,11 +1,11 @@
 import init, { WasmGame } from './pkg/solitaire_wasm.js';
 
 // Constants
-let CARD_W = 64;
-let CARD_H = 96;
-let PILE_SPACING = 72;
+let CARD_W = 40;
+let CARD_H = 66;
+let PILE_SPACING = 92;
 const MARGIN = 30;
-const TABLEAU_Y = 200;
+const TABLEAU_Y = 240;
 let TABLEAU_CARD_OFFSET = 25;
 const TOP_ROW_Y = 30;
 const RESTART_BTN = { x: 0, y: 0, w: 130, h: 48 };
@@ -412,10 +412,10 @@ function resizeCanvas() {
 	canvas.width = window.innerWidth;
 	canvas.height = window.innerHeight;
 	// Fit 7 columns across the full width
-	PILE_SPACING = Math.floor((canvas.width - MARGIN * 12) / 7);
+	PILE_SPACING = Math.floor((canvas.width - MARGIN * 16) / 7);
 	CARD_W = Math.floor(PILE_SPACING - 8); // small gap between columns
 	CARD_H = Math.floor(CARD_W * 1.5);
-	TABLEAU_CARD_OFFSET = Math.floor(CARD_H * 0.18);
+	TABLEAU_CARD_OFFSET = Math.floor(CARD_H * 0.25);
 	RESTART_BTN.x = canvas.width - MARGIN - RESTART_BTN.w;
 	RESTART_BTN.y = TOP_ROW_Y + CARD_H + 10;
 }
