@@ -1,0 +1,15 @@
+{
+  "name": "solitaire-wasm",
+  "type": "module",
+  "version": "0.1.0",
+  "files": [
+    "solitaire_wasm_bg.wasm",
+    "solitaire_wasm.js",
+    "solitaire_wasm.d.ts"
+  ],
+  "main": "solitaire_wasm.js",
+  "types": "solitaire_wasm.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}
