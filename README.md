@@ -1,6 +1,7 @@
 # SolitaireRust 🃏
 
-A fully playable Klondike Solitaire game built with **Rust** and **WebAssembly**, rendered on an HTML5 Canvas.
+A fully playable Klondike Solitaire game built with **Rust** and **WebAssembly**, rendered on an HTML5 Canvas. Currently hosted on my brother's website: https://bajusz.dev/solitaire/
+
 
 ***
 
