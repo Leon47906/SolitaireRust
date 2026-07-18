@@ -9,6 +9,7 @@ const TABLEAU_Y = 240;
 let TABLEAU_CARD_OFFSET = 25;
 const TOP_ROW_Y = 30;
 const RESTART_BTN = { x: 0, y: 0, w: 130, h: 48 };
+const UNDO_BTN = { x: 0, y: 0, w: 130, h: 48 };
 let dragOffsetX = 0;
 let dragOffsetY = 0;
 
@@ -191,6 +192,7 @@ function drawState(state, mouse_x, mouse_y) {
 		});
 	});
 	drawRestartButton();
+    drawUndoButton();
 	for (const dragged of draggedCards) {
 		drawCard(ctx, dragged.card, dragged.x, dragged.y, dragged.highlight);
 	}
@@ -230,6 +232,15 @@ canvas.addEventListener('click', (e) => {
 		render();
 		return;
 	}
+    const { x: ubx, y: uby, w: ubw, h: ubh } = UNDO_BTN;
+    if (x >= ubx && x <= ubx + ubw && y >= uby && y <= uby + ubh) {
+        if (game.can_undo()) {
+            game.undo();
+            selected = null;
+            render();
+        }
+        return;
+    }
 	const { state, dynamicOffset } = render();
 	// Deck click → draw to waste (or flush if empty)
 	if (hitCard(x, y, MARGIN, TOP_ROW_Y)) {
@@ -377,6 +388,25 @@ function drawRestartButton() {
 	ctx.textBaseline = 'middle';
 	ctx.fillText('↺ Restart', x + w / 2, y + h / 2);
 }
+function drawUndoButton() {
+    const { x, y, w, h } = UNDO_BTN;
+    const enabled = game.can_undo();
+
+    ctx.fillStyle = enabled ? 'rgba(0,0,0,0.45)' : 'rgba(0,0,0,0.18)';
+    ctx.beginPath();
+    ctx.roundRect(x, y, w, h, 6);
+    ctx.fill();
+
+    ctx.strokeStyle = enabled ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.15)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    ctx.fillStyle = enabled ? 'white' : 'rgba(255,255,255,0.45)';
+    ctx.font = `bold ${Math.floor(CARD_W * 0.22)}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('↶ Undo', x + w / 2, y + h / 2);
+}
 function drawWinScreen() {
 	// Dim overlay
 	ctx.fillStyle = 'rgba(0,0,0,0.6)';
@@ -418,6 +448,8 @@ function resizeCanvas() {
 	TABLEAU_CARD_OFFSET = Math.floor(CARD_H * 0.25);
 	RESTART_BTN.x = canvas.width - MARGIN - RESTART_BTN.w;
 	RESTART_BTN.y = TOP_ROW_Y + CARD_H + 10;
+    UNDO_BTN.x = RESTART_BTN.x;
+    UNDO_BTN.y = RESTART_BTN.y + RESTART_BTN.h + 10;
 }
 // Entry Point
 async function main() {

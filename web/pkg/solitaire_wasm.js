@@ -80,6 +80,13 @@ export class WasmGame {
     /**
      * @returns {boolean}
      */
+    can_undo() {
+        const ret = wasm.wasmgame_can_undo(this.__wbg_ptr);
+        return ret !== 0;
+    }
+    /**
+     * @returns {boolean}
+     */
     flush_waste() {
         const ret = wasm.wasmgame_flush_waste(this.__wbg_ptr);
         return ret !== 0;
@@ -110,6 +117,13 @@ export class WasmGame {
         this.__wbg_ptr = ret;
         WasmGameFinalization.register(this, this.__wbg_ptr, this);
         return this;
+    }
+    /**
+     * @returns {boolean}
+     */
+    undo() {
+        const ret = wasm.wasmgame_undo(this.__wbg_ptr);
+        return ret !== 0;
     }
 }
 if (Symbol.dispose) WasmGame.prototype[Symbol.dispose] = WasmGame.prototype.free;

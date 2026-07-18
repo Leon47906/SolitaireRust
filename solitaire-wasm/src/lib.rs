@@ -80,4 +80,12 @@ impl WasmGame {
     pub fn is_game_won(&self) -> bool {
         self.game.is_game_won()
     }
+
+    pub fn undo(&mut self) -> bool {
+        self.game.undo()
+    }
+
+    pub fn can_undo(&self) -> bool {
+        self.game.can_undo()
+    }
 }

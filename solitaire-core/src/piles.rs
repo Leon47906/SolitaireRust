@@ -56,6 +56,10 @@ impl Pile {
         self.cards.last()
     }
 
+    pub fn top_mut(&mut self) -> Option<&mut Card> {
+        self.cards.last_mut()
+    }
+
     pub fn size(&self) -> usize {
         self.cards.len()
     }
@@ -74,31 +78,14 @@ impl Pile {
             }
         }
     }
-    pub fn tableau_reveal(&mut self) -> bool {
+    pub fn reveal_new_top_if_needed(&mut self) -> bool {
         match self.size() {
             0 => false,
-            1 => true,
-            2.. => {
-                let len = self.size();
-                if self.cards[len - 2].is_face_up() {
-                    self.cards[len - 2].make_clickable();
-                    true
-                } else {
-                    self.cards[len - 2].flip();
-                    self.cards[len - 2].make_clickable();
-                    true
-                }
-            }
-        }
-    }
-    pub fn tableau_reveal_last(&mut self) -> bool {
-        match self.size() {
-            0 => false,
-            1.. => {
+            _ => {
                 let len = self.size();
                 if self.cards[len - 1].is_face_up() {
                     self.cards[len - 1].make_clickable();
-                    true
+                    false
                 } else {
                     self.cards[len - 1].flip();
                     self.cards[len - 1].make_clickable();
@@ -107,8 +94,11 @@ impl Pile {
             }
         }
     }
-    pub fn recycle_to_deck(&mut self, dest: &mut Pile) {
+    pub fn recycle_to_deck(&mut self, dest: &mut Pile) -> Option<usize> {
         let mut cards = self.cards.drain(..).collect::<Vec<_>>();
+        if cards.is_empty() {
+            return None;
+        }
         cards.reverse();
 
         for card in &mut cards {
@@ -117,16 +107,14 @@ impl Pile {
                 card.flip();
             }
         }
+        
+        let len = cards.len();
 
-        match cards.len() {
-            0 => {}
-            _ => {
-                let len = cards.len();
-                cards[len - 1].make_clickable();
-            }
-        }
+        cards[len - 1].make_clickable();
 
         dest.cards.extend(cards);
+
+        Some(len)
     }
 }
 

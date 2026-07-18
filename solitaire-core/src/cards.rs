@@ -64,3 +64,7 @@ impl Card {
         }
     }
 }
+
+pub fn same_card_identity(a: &Card, b: &Card) -> bool {
+    a.get_value() == b.get_value() && a.get_suit() == b.get_suit()
+}
