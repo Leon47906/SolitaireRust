@@ -538,7 +538,10 @@ impl SolitaireGame {
             cards.push(card);
         }
 
-        for card in cards {
+        for mut card in cards {
+            if !card.is_face_up() {
+                card.flip();
+            }
             self.waste.add_to_top(card);
         }
 
