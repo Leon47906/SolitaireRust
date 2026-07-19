@@ -8,12 +8,18 @@ pub enum Suit {
     Clubs,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, Copy, Eq, Serialize)]
 pub struct Card {
     value: u8,
     suit: Suit,
     face_up: bool,
     is_clickable: bool,
+}
+
+impl PartialEq for Card {
+    fn eq(&self, other: &Self) -> bool {
+        self.value == other.value && self.suit == other.suit
+    }
 }
 
 impl Card {

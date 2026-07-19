@@ -463,14 +463,8 @@ impl SolitaireGame {
 
         let expected: Vec<Card> = cards.iter().rev().copied().collect();
 
-        if popped.len() != expected.len() {
+        if popped != expected {
             return false;
-        }
-
-        for (a, b) in popped.iter().zip(expected.iter()) {
-            if !same_card_identity(a, b) {
-                return false;
-            }
         }
 
         {
