@@ -49,18 +49,10 @@ impl Card {
     }
     pub fn is_red(&self) -> bool {
         match self.get_suit() {
-            Suit::Hearts => {
-                true
-            }
-            Suit::Diamonds => {
-                true
-            }
-            Suit::Spades => {
-                false
-            }
-            Suit::Clubs => {
-                false
-            }
+            Suit::Hearts => true,
+            Suit::Diamonds => true,
+            Suit::Spades => false,
+            Suit::Clubs => false,
         }
     }
 }

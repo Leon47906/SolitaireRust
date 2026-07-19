@@ -45,7 +45,7 @@ pub enum Move {
     },
 }
 
-#[derive(Debug,Clone)]
+#[derive(Debug, Clone)]
 pub enum UndoRecord {
     MoveCards {
         from: PileKind,
@@ -56,7 +56,7 @@ pub enum UndoRecord {
     },
     RecycleWaste {
         cards_moved: usize,
-    }
+    },
 }
 
 #[derive(Debug, Clone)]
@@ -74,7 +74,7 @@ pub struct SolitaireGame {
     tableau: Vec<Pile>,
     foundation: Vec<Pile>,
     waste: Pile,
-    history: Vec<UndoRecord>
+    history: Vec<UndoRecord>,
 }
 
 impl Default for SolitaireGame {
@@ -117,7 +117,7 @@ impl SolitaireGame {
             tableau,
             foundation,
             waste,
-            history: vec![]
+            history: vec![],
         }
     }
     pub fn is_game_won(&self) -> bool {
@@ -126,18 +126,21 @@ impl SolitaireGame {
     fn is_on_top(&self, card: &Card) -> bool {
         for pile in &self.tableau {
             if let Some(top_card) = pile.top()
-                && top_card == card {
-                    return true;
-                }
+                && top_card == card
+            {
+                return true;
+            }
         }
         if let Some(top_card) = self.waste.top()
-            && top_card == card {
-                return true;
-            }
+            && top_card == card
+        {
+            return true;
+        }
         if let Some(top_card) = self.deck.top()
-            && top_card == card {
-                return true;
-            }
+            && top_card == card
+        {
+            return true;
+        }
         false
     }
     fn is_foundation_move_valid(&self, card: &Card, destination: &Pile) -> bool {
@@ -251,7 +254,7 @@ impl SolitaireGame {
                 return Err(MoveError);
             }
         };
-        
+
         let drawn_card = {
             let from_pile = self.pile_for_kind_mut(from).ok_or(MoveError)?;
             from_pile.draw_from_top().ok_or(MoveError)?
@@ -267,9 +270,20 @@ impl SolitaireGame {
             to_pile.add_to_top(drawn_card);
         }
 
-        Ok(UndoRecord::MoveCards { from, to, cards: vec![drawn_card], moved_cards_were_modified , flipped_source_top })
+        Ok(UndoRecord::MoveCards {
+            from,
+            to,
+            cards: vec![drawn_card],
+            moved_cards_were_modified,
+            flipped_source_top,
+        })
     }
-    fn move_stack(&mut self, from: PileKind, count: usize, to: PileKind) -> Result<UndoRecord, MoveError> {
+    fn move_stack(
+        &mut self,
+        from: PileKind,
+        count: usize,
+        to: PileKind,
+    ) -> Result<UndoRecord, MoveError> {
         match count {
             2.. => {
                 let (from_col, to_col) = match (from, to) {
@@ -320,7 +334,13 @@ impl SolitaireGame {
                     self.tableau[to_col].add_to_top(card);
                 }
 
-                Ok(UndoRecord::MoveCards { from, to, cards: stack_record, moved_cards_were_modified: false, flipped_source_top })
+                Ok(UndoRecord::MoveCards {
+                    from,
+                    to,
+                    cards: stack_record,
+                    moved_cards_were_modified: false,
+                    flipped_source_top,
+                })
             }
             1 => self.move_top_card(from, to),
             _ => Err(MoveError),
@@ -335,7 +355,7 @@ impl SolitaireGame {
             Some(cards_moved) => {
                 self.history.push(UndoRecord::RecycleWaste { cards_moved });
                 true
-            },
+            }
             None => false,
         }
     }
@@ -351,11 +371,9 @@ impl SolitaireGame {
             Ok(record) => {
                 self.history.push(record);
                 true
-            },
+            }
             Err(_) => false,
         }
-
-
     }
     pub fn get_state(&self) -> GameState {
         let card_view = |c: &Card| CardView {
@@ -416,8 +434,15 @@ impl SolitaireGame {
         }
         false
     }
-    
-    fn undo_move_cards(&mut self, from: PileKind, to: PileKind, cards: Vec<Card>, moved_cards_were_modified: bool, flipped_source_top: bool) -> bool {
+
+    fn undo_move_cards(
+        &mut self,
+        from: PileKind,
+        to: PileKind,
+        cards: Vec<Card>,
+        moved_cards_were_modified: bool,
+        flipped_source_top: bool,
+    ) -> bool {
         let moved_count = cards.len();
         let mut popped = Vec::with_capacity(moved_count);
 
@@ -434,7 +459,6 @@ impl SolitaireGame {
                 };
                 popped.push(drawn);
             }
-
         }
 
         let expected: Vec<Card> = cards.iter().rev().copied().collect();
@@ -509,7 +533,7 @@ impl SolitaireGame {
                             card.flip();
                         }
                     }
-                    
+
                     if let Some(top) = from_pile.top_mut() {
                         top.make_clickable();
                     } else {
@@ -555,7 +579,19 @@ impl SolitaireGame {
         };
 
         match record {
-            UndoRecord::MoveCards { from, to, cards, moved_cards_were_modified, flipped_source_top } => self.undo_move_cards(from, to, cards, moved_cards_were_modified, flipped_source_top),
+            UndoRecord::MoveCards {
+                from,
+                to,
+                cards,
+                moved_cards_were_modified,
+                flipped_source_top,
+            } => self.undo_move_cards(
+                from,
+                to,
+                cards,
+                moved_cards_were_modified,
+                flipped_source_top,
+            ),
             UndoRecord::RecycleWaste { cards_moved } => self.undo_recycle_waste(cards_moved),
         }
     }

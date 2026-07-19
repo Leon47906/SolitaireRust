@@ -107,7 +107,7 @@ impl Pile {
                 card.flip();
             }
         }
-        
+
         let len = cards.len();
 
         cards[len - 1].make_clickable();
